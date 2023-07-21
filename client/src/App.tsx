@@ -7,6 +7,7 @@ import { EditTodo } from './components/EditTodo'
 import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Todos } from './components/Todos'
+import { TikTokPlayer } from './components/TikTokPlayer'
 
 export interface AppProps {}
 
@@ -59,7 +60,9 @@ export default class App extends Component<AppProps, AppState> {
         <Menu.Item name="home">
           <Link to="/">Home</Link>
         </Menu.Item>
-
+        <Menu.Item name="player">
+          <Link to="/player">Player</Link>
+        </Menu.Item>
         <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
       </Menu>
     )
@@ -93,6 +96,14 @@ export default class App extends Component<AppProps, AppState> {
           exact
           render={props => {
             return <Todos {...props} auth={this.props.auth} />
+          }}
+        />
+
+        <Route
+          path="/player"
+          exact
+          render={(props) => {
+            return <TikTokPlayer {...props} auth={this.props.auth} />
           }}
         />
 

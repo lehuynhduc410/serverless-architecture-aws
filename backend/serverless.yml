@@ -27,10 +27,12 @@ provider:
   environment:
     TODOS_TABLE: Serverless-c5-todo-app-6-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: serverless-c5-todo-app-6-images-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: serverless-c5-todo-app-7-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     PROJECT_NAME: serverless-todo-app-5
     INDEX_NAME: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+    VIDEOS_TABLE: Serverless-c5-video-app-6-${self:provider.stage}
+    VIDEOS_CREATED_AT_INDEX: CreatedAtIndex
 
   logs:
     # Enable API Gateway logs
@@ -50,6 +52,9 @@ custom:
       - name: UpdateTodoRequest
         contentType: application/json
         schema: ${file(models/update-todo-model.json)}
+      - name: CreateVideoRequestModel
+        contentType: application/json
+        schema: ${file(models/videos/create-video-model.json)}
 
 functions:
   hello:
@@ -185,6 +190,90 @@ functions:
         Resource:
           - '*'
 
+  GetVideos:
+    handler: src/lambda/http/videos/getVideos.handler
+    events:
+      - http:
+          method: get
+          path: videos
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.VIDEOS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.VIDEOS_TABLE}/index/${self:provider.environment.VIDEOS_CREATED_AT_INDEX}
+
+  CreateVideo:
+    handler: src/lambda/http/videos/createVideo.handler
+    events:
+      - http:
+          method: post
+          path: videos
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new video
+            description: create a new video
+            requestModels:
+              'application/json': CreateVideoRequestModel
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.VIDEOS_TABLE}
+
+  DeleteVideo:
+    handler: src/lambda/http/videos/deleteVideo.handler
+    events:
+      - http:
+          method: delete
+          path: videos/{videoId}
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.VIDEOS_TABLE}
+
+  GenerateUploadUrlVideo:
+    handler: src/lambda/http/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          path: videos/{videoId}/attachment
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.VIDEOS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:*
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
+      # - Effect: Allow
+      #   Action:
+      #     - secretsmanager:GetSecretValue
+      #   Resource: !Ref Auth0Secret
+      # - Effect: Allow
+      #   Action:
+      #     - kms:Decrypt
+      #   Resource: !GetAtt KMSKey.Arn
+
 resources:
   Resources:
     GatewayResponseDefault4XX:
@@ -237,6 +326,33 @@ resources:
         TableName: ${self:provider.environment.TODOS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    VideosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: videoId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: videoId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.VIDEOS_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.VIDEOS_CREATED_AT_INDEX}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
