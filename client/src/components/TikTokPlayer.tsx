@@ -62,10 +62,10 @@ export class TikTokPlayer extends React.PureComponent<PlayersProps, PlayerState>
   render() {
     return (
       <div>
-        <Header as="h1">Player</Header>
+        <Header as="h1">TikTok</Header>
 
         <div>
-          <h1>Upload new video</h1>
+          <h1>TikTok App</h1>
 
           <Form onSubmit={this.handleSubmit}>
             <Form.Field>
@@ -79,7 +79,7 @@ export class TikTokPlayer extends React.PureComponent<PlayersProps, PlayerState>
               />
             </Form.Field>
             <Form.Field>
-              <label>File</label>
+              <label>Short Video</label>
               <input
                 key={this.state.inputKey}
                 type="file"
