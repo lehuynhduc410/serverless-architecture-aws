@@ -25,10 +25,12 @@ export async function createVideo(
   return rst
 }
 
+// get video for user function
 export async function getVideosForUser(userId: string): Promise<VideoItem[]> {
   return await videoAccess.getAllVideos(userId)
 }
 
+// get video function
 export async function getVideo(
   videoId: string,
   userId: string
@@ -36,7 +38,7 @@ export async function getVideo(
   return await videoAccess.getVideo(videoId, userId)
 }
 
-
+// delete video function
 export async function deleteVideo(video: VideoItem): Promise<boolean> {
   return await videoAccess.deleteVideo(video)
 }

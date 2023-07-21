@@ -265,14 +265,6 @@ functions:
         Action:
           - s3:*
         Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
-      # - Effect: Allow
-      #   Action:
-      #     - secretsmanager:GetSecretValue
-      #   Resource: !Ref Auth0Secret
-      # - Effect: Allow
-      #   Action:
-      #     - kms:Decrypt
-      #   Resource: !GetAtt KMSKey.Arn
 
 resources:
   Resources:

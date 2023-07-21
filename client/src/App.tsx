@@ -61,7 +61,7 @@ export default class App extends Component<AppProps, AppState> {
           <Link to="/">Home</Link>
         </Menu.Item>
         <Menu.Item name="player">
-          <Link to="/player">Player</Link>
+          <Link to="/player">Video</Link>
         </Menu.Item>
         <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
       </Menu>
